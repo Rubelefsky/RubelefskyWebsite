@@ -1,48 +1,140 @@
-    // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+// Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
             });
-        });
+        }
+    });
+});
 
-        // Header scroll effect
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(255, 255, 255, 0.98)';
-                header.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
-            } else {
-                header.style.background = 'rgba(255, 255, 255, 0.95)';
-                header.style.boxShadow = 'none';
+// Header scroll effect
+const header = document.querySelector('header');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+
+    if (currentScroll > 50) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+
+    lastScroll = currentScroll;
+});
+
+// Cursor glow effect (desktop only)
+const cursorGlow = document.getElementById('cursorGlow');
+
+if (window.matchMedia('(pointer: fine)').matches && cursorGlow) {
+    let mouseX = 0;
+    let mouseY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+        // Smooth follow effect
+        currentX += (mouseX - currentX) * 0.1;
+        currentY += (mouseY - currentY) * 0.1;
+
+        cursorGlow.style.left = currentX + 'px';
+        cursorGlow.style.top = currentY + 'px';
+
+        requestAnimationFrame(animateCursor);
+    }
+
+    animateCursor();
+
+    // Hide cursor glow when mouse leaves window
+    document.addEventListener('mouseleave', () => {
+        cursorGlow.style.opacity = '0';
+    });
+
+    document.addEventListener('mouseenter', () => {
+        cursorGlow.style.opacity = '0.3';
+    });
+} else if (cursorGlow) {
+    cursorGlow.style.display = 'none';
+}
+
+// Scroll reveal animation with Intersection Observer
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            // Stagger animation for skill items
+            if (entry.target.classList.contains('skill-item')) {
+                const siblings = document.querySelectorAll('.skill-item');
+                siblings.forEach((sibling, index) => {
+                    if (sibling.classList.contains('active')) {
+                        sibling.style.transitionDelay = `${index * 0.1}s`;
+                    }
+                });
             }
-        });
+        }
+    });
+}, observerOptions);
 
-        // Add animation on scroll for timeline items
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+// Observe all reveal elements
+document.querySelectorAll('.reveal').forEach(item => {
+    revealObserver.observe(item);
+});
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
+// Add staggered animation delays to timeline items
+document.querySelectorAll('.timeline-item.reveal').forEach((item, index) => {
+    item.style.transitionDelay = `${index * 0.15}s`;
+});
 
-        document.querySelectorAll('.timeline-item, .skill-item').forEach(item => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(30px)';
-            item.style.transition = 'all 0.6s ease';
-            observer.observe(item);
-        });
-    
+// Add staggered animation delays to skill items
+document.querySelectorAll('.skill-item.reveal').forEach((item, index) => {
+    item.style.transitionDelay = `${index * 0.1}s`;
+});
+
+// Parallax effect for hero section (subtle)
+const hero = document.querySelector('.hero');
+if (hero) {
+    window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY;
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent && scrolled < window.innerHeight) {
+            heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+            heroContent.style.opacity = 1 - (scrolled * 0.002);
+        }
+    });
+}
+
+// Interactive hover effect for cards
+document.querySelectorAll('.skill-item, .timeline-content, .contact-link').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+
+// Typing effect for hero badge (optional enhancement)
+const heroBadge = document.querySelector('.hero-badge');
+if (heroBadge) {
+    heroBadge.style.opacity = '0';
+    setTimeout(() => {
+        heroBadge.style.opacity = '1';
+    }, 100);
+}
